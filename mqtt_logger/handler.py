@@ -1,6 +1,6 @@
 import sys
 import logging
-import paho
+import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion, MQTTErrorCode
 
 class MqttLoggingHandler(logging.Handler):
@@ -10,7 +10,7 @@ class MqttLoggingHandler(logging.Handler):
     def __init__(self, host : str, logtopicprefix : str, port : int = 1883, user : str = "", passwd : str = ""):
         logging.Handler.__init__(self)
         
-        self._mqttClient = paho.mqtt.client.Client(CallbackAPIVersion.VERSION2)
+        self._mqttClient = mqtt.Client(CallbackAPIVersion.VERSION2)
         self._mqttserver = host
         self._mqttport = port if (port>0) else 1883
         self._mqttuser = user
