@@ -1,5 +1,6 @@
 import logging
 import unittest
+import json
 import time
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion, MQTTErrorCode
@@ -21,9 +22,10 @@ class TestMQTTLogger(unittest.TestCase):
         self.client.on_subscribe = self.on_subscribe
         self.client.on_message = self.on_message
 
+        logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger()
         self.handler = MqttLoggingHandler("localhost", self.topicprefix)
-        self.handler.setLevel(logging.ERROR)
+        self.handler.setLevel(logging.INFO)
         self.handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         self.logger.addHandler(self.handler)
 
@@ -94,7 +96,29 @@ class TestMQTTLogger(unittest.TestCase):
         self.logger.error("This is an error")
 
         self.wait_until(lambda: self.received_message is not None, timeout=5, msg="Timeout waiting for message")
-        self.assertEqual(self.received_message, "ERROR: This is an error")
+        self.assertEqual(self.received_message, json.dumps({
+            'message' : "ERROR: This is an error",
+            'additional_data' : []
+        }, indent=2))
+        self.client.unsubscribe(f"{self.topicprefix}/ERROR")
+
+
+    def test_log_with_arguments(self):
+        self.subscribe(f"{self.topicprefix}/WARNING")
+
+        self.handler.connect()
+        self.received_message = None
+        self.logger.warning("This is a warning", {
+            'x':1, 'y':'test'})
+
+        self.wait_until(lambda: self.received_message is not None, timeout=5, msg="Timeout waiting for message")
+        self.assertEqual(self.received_message, json.dumps({
+            'message' : "WARNING: This is a warning",
+            'additional_data' : {
+                'x' : 1,
+                'y' : 'test'
+            }
+        }, indent=2))
 
 
 

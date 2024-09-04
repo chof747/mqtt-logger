@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="mqtt-logger",
-    version="0.0.3",
+    version="0.0.4",
     author="Christian Hofbauer",
     author_email="chof@gmx.at",
     description="lightweight python module that can be used to log messages to mqtt",

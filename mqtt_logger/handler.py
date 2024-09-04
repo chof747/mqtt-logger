@@ -1,5 +1,6 @@
 import sys
 import logging
+import json
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion, MQTTErrorCode
 
@@ -55,9 +56,15 @@ class MqttLoggingHandler(logging.Handler):
         self.publish(self.statustopic, "FINISHED" if (ok) else "ABORTED", 5)
         self._mqttClient.disconnect()
     
-    def emit(self, record):
-        msg = self.format(record)
-        
+    def emit(self, record: logging.LogRecord):
+        logmsg = self.format(record)
+        data = record.args
+
+        msg = json.dumps({
+            'message' : logmsg,
+            'additional_data' : data
+        }, indent = 2)
+
         if ((self._mqttClient.is_connected()) or (self.reconnect())):
             result = False
             for to in [0.5, 1, 2, 5]:
