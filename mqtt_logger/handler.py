@@ -19,14 +19,16 @@ class MqttLoggingHandler(logging.Handler):
 
     def reconnect(self) -> bool:
         if self._mqttserver:
-            if (not self._mqttClient):
+            if (not self._mqttClient.host):
                 return self.connect()
             else: 
-                return (MQTTErrorCode.MQTT_ERR_SUCCESS == self._mqttClient.reconnect())
+                if (self._mqttClient.is_connected()):
+                    return True
+                else:
+                    return (MQTTErrorCode.MQTT_ERR_SUCCESS == self._mqttClient.reconnect())
             
 
-    def connect(self) -> bool:
-
+    def connect(self) -> bool:        
         if self._mqttuser:
             self._mqttClient.username_pw_set(self._mqttuser, self._mqttpasswd)
             
@@ -40,9 +42,12 @@ class MqttLoggingHandler(logging.Handler):
             return True
         
     def publish(self, subtopic :str, msg : str, timeout : int = 0.5) -> bool:
-        pi = self._mqttClient.publish(f"{self._prefix}/{subtopic}", msg)
-        pi.wait_for_publish(timeout)
-        return pi.is_published()
+        if (self.reconnect()):
+            pi = self._mqttClient.publish(f"{self._prefix}/{subtopic}", msg)
+            pi.wait_for_publish(timeout)
+            return pi.is_published()
+        else:
+            return False
 
         
 

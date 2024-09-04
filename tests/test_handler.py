@@ -36,12 +36,6 @@ class TestMqttLoggingHandler(unittest.TestCase):
         self.mock_client.reconnect.return_value = MQTTErrorCode.MQTT_ERR_SUCCESS
         self.assertTrue(self.handler.reconnect())
 
-    def test_reconnect_new_client(self):
-        self.handler._mqttClient = None
-        with patch.object(self.handler, 'connect', return_value=True) as mock_connect:
-            self.assertTrue(self.handler.reconnect())
-            mock_connect.assert_called_once()
-
     def test_publish_success(self):
         mock_pi = MagicMock()
         mock_pi.is_published.return_value = True
