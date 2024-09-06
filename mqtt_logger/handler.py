@@ -8,7 +8,7 @@ class MqttLoggingHandler(logging.Handler):
 
     statustopic = "state"
 
-    def __init__(self, host : str, logtopicprefix : str, port : int = 1883, user : str = "", passwd : str = ""):
+    def __init__(self, host : str, logtopicprefix : str, port : int = 1883, user : str = "", passwd : str = "", node : str = ""):
         logging.Handler.__init__(self)
         
         self._mqttClient = mqtt.Client(CallbackAPIVersion.VERSION2)
@@ -17,6 +17,7 @@ class MqttLoggingHandler(logging.Handler):
         self._mqttuser = user
         self._mqttpasswd = passwd
         self._prefix = logtopicprefix
+        self._node = node
 
     def reconnect(self) -> bool:
         if self._mqttserver:
@@ -62,7 +63,8 @@ class MqttLoggingHandler(logging.Handler):
 
         msg = json.dumps({
             'message' : logmsg,
-            'additional_data' : data
+            'additional_data' : data,
+            'node' : self._node,
         }, indent = 2)
 
         if ((self._mqttClient.is_connected()) or (self.reconnect())):

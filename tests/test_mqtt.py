@@ -24,7 +24,7 @@ class TestMQTTLogger(unittest.TestCase):
 
         logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger()
-        self.handler = MqttLoggingHandler("localhost", self.topicprefix)
+        self.handler = MqttLoggingHandler("localhost", self.topicprefix, node = "tester")
         self.handler.setLevel(logging.INFO)
         self.handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         self.logger.addHandler(self.handler)
@@ -98,7 +98,8 @@ class TestMQTTLogger(unittest.TestCase):
         self.wait_until(lambda: self.received_message is not None, timeout=5, msg="Timeout waiting for message")
         self.assertEqual(self.received_message, json.dumps({
             'message' : "ERROR: This is an error",
-            'additional_data' : []
+            'additional_data' : [],
+            'node' : 'tester'
         }, indent=2))
         self.client.unsubscribe(f"{self.topicprefix}/ERROR")
 
@@ -117,7 +118,8 @@ class TestMQTTLogger(unittest.TestCase):
             'additional_data' : {
                 'x' : 1,
                 'y' : 'test'
-            }
+            },
+            'node' : 'tester'
         }, indent=2))
 
 
